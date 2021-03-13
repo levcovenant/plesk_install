@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+# Vars for plesk init, please change per server:
+mypass='SET A STRONG PASSWORRD'
+mail='ADMIN EMAIL ADDRESS'
+
 # append ~/.bashrc with history flags
 # history -a --> append history from all sessions
 # history HISTTIMEFORMAT='%d/%m/%y %T ' - adds date and time to history
@@ -47,7 +51,7 @@ wget https://autoinstall.plesk.com/plesk-installer
 chmod +x plesk-installer
 
 # install latest plesk version with specific components for better management of server
-# PLESK_18_0_33 - latest plesk 03/2021
+# PLESK_18_0_34 - latest plesk 03/2021
 # panel - Plesk
 # bind - BIND DNS server
 # fail2ban - Fail2Ban
@@ -80,7 +84,7 @@ chmod +x plesk-installer
 # repair-kit - Repair Kit
 # monitoring - Advanced Monitoring
 echo "Installing Plesk...."
-./plesk-installer install PLESK_18_0_33 --components panel bind fail2ban selinux l10n resctrl mysqlgroup roundcube spamassassin postfix dovecot proftpd webalizer awstats mod_fcgid webservers php7.4 php7.3 php7.2 php7.0 php7.1 php8.0 php5.6 phpgroup config-troubleshooter psa-firewall heavy-metal-skin letsencrypt imunifyav repair-kit monitoring
+./plesk-installer --select-product-id plesk --select-release-latest --install-component panel --install-component panel --install-component bind --install-component fail2ban --install-component selinux --install-component l10n --install-component resctrl --install-component mysqlgroup --install-component roundcube --install-component spamassassin --install-component postfix --install-component dovecot --install-component proftpd --install-component webalizer --install-component awstats --install-component mod_fcgid --install-component webservers --install-component php7.4 --install-component php7.3 --install-component php7.2 --install-component php7.0 --install-component php7.1 --install-component php8.0 --install-component php5.6 --install-component phpgroup --install-component config-troubleshooter --install-component psa-firewall --install-component heavy-metal-skin --install-component letsencrypt --install-component imunifyav --install-component repair-kit --install-component monitoring
 
 echo "Updating MariaDB to latest - 10.5"
 # mariadb 10.5 install
@@ -126,6 +130,11 @@ systemctl start mariadb  # to start MariaDB if not started
 systemctl enable mariadb # to make sure that MariaDB will start after the server reboot automatically
 
 # configure plesk
+
+# init plesk
+echo "Init Plesk"
+plesk bin init_conf --init  -name "administrator" -passwd $mypass  -email $mail
+
 # dns tempalte
 echo "Setting dns template"
 plesk bin server_dns --set 'NS,,ns1.sitesdepot.com.;NS,,ns2.sitesdepot.com.;A,,<ip>;A,webmail,<ip>;MX,,mail.<domain>.,10;A,mail,<ip>;CNAME,ftp,<domain>.;CNAME,www,<domain>.;PTR,<ip>,,24;TXT,,v=spf1 mx a ip4:<ip> -all;TXT,_dmarc, v=DMARC1\; p=none;'
@@ -153,7 +162,3 @@ plesk bin mailserver --add-maps-zone bl.spamcop.net,sbl.spamhaus.org,xbl.spamhau
 # activate default plesk rules in firewall
 echo "Activating plesk firewall"
 /usr/local/psa/bin/modules/firewall/settings -e && /usr/local/psa/bin/modules/firewall/settings -c
-
-
-
-
