@@ -1,0 +1,104 @@
+- name: "INstall Plesk on Centos7 WIth fireawall"
+  hosts:
+  vars:
+    mypass: 'B@Erqxz~$:R!p.39K8[b'
+    mail: 'test@test.com'
+  tasks:
+    - name: "Append .bashrc with history flags"
+      lineinfile:
+        path: ~/.bashrc
+        state: present
+        line: export HISTTIMEFORMAT='%d/%m/%y %T '
+              export PROMPT_COMMAND='history -a'
+
+    - name: "Set VIm options"
+      path: ~/.vimrc
+      line: syntax on
+            colo delek
+
+    - name: "update OS"
+      yum:
+        name: '*'
+        state: latest
+
+    - name: "add epel repo"
+      yum:
+        name: epel-release
+        state: present
+
+    - name: "install packages"
+    - yum:
+        name:
+          - bash-completion
+          - vim
+          - wget
+          - mlocate
+          - ntp
+          - ncdu
+        state: present
+
+    - name: "stop and disable firewalld"
+      systemd:
+        state: stopped
+        name: firewalld
+        enabled: no
+
+    - name: "set timezone"
+      community.general.timezone:
+        name: Asia/Jerusalem
+
+    - name: "activate ntp service"
+      systemd:
+        state: started
+        name: ntp
+        enabled: yes
+
+    - name: "Download Plesk installer"
+      get_url:
+        url: http://autoinstall.plesk.com/plesk-installer
+        dest: /root/plesk-installer
+        mode: 0700
+
+    - name: Run Plesk installer
+      command: /root/plesk-installer --select-product-id=plesk \
+        --select-release-id "{{ plesk.release_id }}" \
+        --install-component panel \
+        --install-component bind \
+        --install-component fail2ban \
+        --install-component selinux \
+        --install-component l10n \
+        --install-component resctrl \
+        --install-component mysqlgroup \
+        --install-component roundcube \
+        --install-component spamassassin \
+        --install-component postfix \
+        --install-component dovecot \
+        --install-component proftpd \
+        --install-component webalizer \
+        --install-component awstats \
+        --install-component mod_fcgid \
+        --install-component webservers \
+        --install-component php7.4 \
+        --install-component php7.3 \
+        --install-component php7.2 \
+        --install-component php7.0 \
+        --install-component php7.1 \
+        --install-component php8.0 \
+        --install-component php5.6 \
+        --install-component phpgroup \
+        --install-component config-troubleshooter \
+        --install-component psa-firewall \
+        --install-component heavy-metal-skin \
+        --install-component letsencrypt \
+        --install-component imunifyav \
+        --install-component repair-kit \
+        --install-component monitoring
+
+      args:
+        creates: /usr/sbin/plesk
+
+    - name: Run Plesk initial configuration
+      command: plesk bin init_conf \
+        --init \
+        -passwd "{{ mypass }}" \
+        -email "{{ mail }}" \
