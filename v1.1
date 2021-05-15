@@ -133,7 +133,7 @@ systemctl enable mariadb # to make sure that MariaDB will start after the server
 
 # init plesk
 echo "Init Plesk"
-plesk bin init_conf --init  -name "administrator" -passwd $mypass  -email $mail
+plesk bin init_conf --init  -name "administrator" -passwd $mypass  -email $mail -trial_license true -license_agreed true
 
 # dns tempalte
 echo "Setting dns template"
@@ -149,8 +149,13 @@ plesk bin mailserver --set-message-submission true
 echo "Making sure more mails will arrive to clients"
 plesk bin mailserver --disable-dmarc
 
-# diable DKIM check on incoming
+# disable DKIM check on incoming
 plesk bin mailserver --verify-incoming-mail false
+
+
+# activate default plesk rules in firewall
+echo "Activating plesk firewall"
+/usr/local/psa/bin/modules/firewall/settings -e && /usr/local/psa/bin/modules/firewall/settings -c
 
 # Activate DNS Black hole
 echo "Adding black hole spam lists"
@@ -159,6 +164,3 @@ plesk bin mailserver --set-maps-status true
 # add a few lists
 plesk bin mailserver --add-maps-zone bl.spamcop.net,sbl.spamhaus.org,xbl.spamhaus.org
 
-# activate default plesk rules in firewall
-echo "Activating plesk firewall"
-/usr/local/psa/bin/modules/firewall/settings -e && /usr/local/psa/bin/modules/firewall/settings -c
