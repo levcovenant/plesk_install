@@ -159,8 +159,6 @@ echo "Activating plesk firewall"
 
 # Activate DNS Black hole
 echo "Adding black hole spam lists"
-plesk bin mailserver --set-maps-status true
-
-# add a few lists
 plesk bin mailserver --add-maps-zone bl.spamcop.net,sbl.spamhaus.org,xbl.spamhaus.org
+plesk bin mailserver --set-maps-status true
 
